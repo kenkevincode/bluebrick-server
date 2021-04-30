@@ -9,12 +9,12 @@ const authController = new AuthController()
 const articleController = new ArticleController()
 
 router.post(
-	'/registration',
+	'/register',
 	[
 		check('username', 'Имя пользователя не моежет быть пустым').notEmpty(),
 		check('password', 'Пароль должен быть более 4 и менее 10 символов').isLength({ min: 4, max: 10 })
 	],
-	authController.registration
+	authController.register
 )
 router.post('/login', authController.login)
 router.get('/users', roleMiddleware('ADMIN'), authController.getUsers)
