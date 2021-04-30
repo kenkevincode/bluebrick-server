@@ -1,9 +1,10 @@
 const { Schema, model } = require('mongoose')
 
-const Article = new Schema({
+const articleSchema = new Schema({
 	author: {
 		type: String,
-		required: true
+		required: false,
+		default: 'lex'
 	},
 	title: {
 		type: String,
@@ -29,12 +30,20 @@ const Article = new Schema({
 	},
   createdDate: {
 		type: Date,
-		default: Date.now
+		default: Date.now()
 	},
   updatedDate: {
 		type: Date,
-		default: Date.now
+		default: Date.now()
 	}
 })
 
-module.exports = model('Article', Article)
+articleSchema.set('toJSON', {
+	transform: function(doc, ret, options) {
+		ret.id = ret._id
+		delete ret._id
+		delete ret.__v
+	}
+})
+
+module.exports = model('Article', articleSchema)

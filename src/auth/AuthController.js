@@ -1,4 +1,4 @@
-const User = require('./User')
+const User = require('../users/User')
 const Role = require('./Role')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -14,20 +14,26 @@ const generateAccessToken = (id, roles) => {
 }
 
 class AuthController {
-	async registration(req, res) {
+	async register(req, res) {
 		try {
 			const errors = validationResult(req)
 			if (!errors.isEmpty()) {
 				res.status(400).json({ message: 'Ошибка при регистрации', errors })
 			}
-			const { username, password } = req.body
+			const { email, username, password } = req.body
+			const emailed = await User.findOne({ email })
+			if (emailed) {
+				return res.status(400).json({ message: 'Пользователь с таким email уже существует' })
+			}
+
 			const existed = await User.findOne({ username })
 			if (existed) {
 				return res.status(400).json({ message: 'Пользователь с таким именем уже существует' })
 			}
+
 			const hashPassword = bcrypt.hashSync(password, 7)
 			const userRole = Role.ADMIN // await Role.findOne({ value: 'USER' })
-			const user = new User({ username, password: hashPassword, roles: [userRole] })
+			const user = new User({ email, username, password: hashPassword, roles: [userRole] })
 			await user.save()
 			return res.json({ message: 'Пользователь успешно зарегестрирован' })
 		} catch (e) {
@@ -47,6 +53,10 @@ class AuthController {
 			if (!validPassword) {
 				return res.status(400).json({ message: 'Введен неверный пароль' })
 			}
+
+			user.lastLoginedDate = Date.now()
+			await user.save()
+			
 			const token = generateAccessToken(user._id, user.roles)
 			return res.json({ token })
 		} catch (e) {
@@ -57,10 +67,6 @@ class AuthController {
 
 	async getUsers(req, res) {
 		try {
-			// const userRole = new Role()
-			// const adminRole = new Role({value: 'ADMIN'})
-			// await userRole.save()
-			// await adminRole.save()
 			const users = await User.find()
 			res.json(users)
 		} catch (e) {

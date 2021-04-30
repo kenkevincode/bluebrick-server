@@ -1,6 +1,11 @@
 const { Schema, model } = require('mongoose')
 
-const User = new Schema({
+const UserSchema = new Schema({
+	email: {
+		type: String,
+		unique: true,
+		required: true
+	},
 	username: {
 		type: String,
 		unique: true,
@@ -10,7 +15,11 @@ const User = new Schema({
 		type: String,
 		required: true
 	},
+	lastLoginedDate: {
+		type: Date,
+		default: Date.now()
+	},
 	roles: [{ type: String, ref: 'Role' }]
 })
 
-module.exports = model('User', User)
+module.exports = model('User', UserSchema)

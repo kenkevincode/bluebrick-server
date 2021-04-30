@@ -1,8 +1,5 @@
 const Article = require('../articles/Article')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const { validationResult } = require('express-validator')
-const { secret } = require('../config')
+const errorHandler = require('../utils/errorHandler')
 
 class ArticleController {
 	async getAll(req, res) {
@@ -12,12 +9,13 @@ class ArticleController {
 			// res.status(200).json(articles)
 			const articles = await Article.find()
 			res.json(articles)
-		} catch (e) {
-			console.log(e)
+		} catch (error) {
+			errorHandler(res, error)
 		}
 	}
 
 	async create(req, res) {
+		console.log('request', req.body)
 		try {
 			// const existed = await Article.findOne({ title: req.body.title })
 			// if (existed) {
@@ -25,10 +23,11 @@ class ArticleController {
 			// }
 
 			const article = new Article(req.body)
+			console.log('article', article)
 			await article.save()
-			res.status(201).json({ message: 'Статья создана' })
+			res.status(201).json(article)
 		} catch (error) {
-			res.status(500).json({ message: `Error: ${error}` })
+			errorHandler(res, error)
 		}
 	}
 
@@ -42,7 +41,7 @@ class ArticleController {
 			const updatedArticle = await Article.findOneAndUpdate({ _id: req.params.id }, { $set: data }, { new: true })
 			res.status(200).json(updatedArticle)
 		} catch (error) {
-			res.status(500).json({ message: `Error: ${error}` })
+			errorHandler(res, error)
 		}
 	}
 
@@ -51,7 +50,7 @@ class ArticleController {
 			await Article.remove({ _id: req.params.id })
 			res.status(200).json({ message: 'Статья удалена' })
 		} catch (error) {
-			res.status(500).json({ message: `Error: ${error}` })
+			errorHandler(res, error)
 		}
 	}
 }
